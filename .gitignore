@@ -1,7 +1,9 @@
 *.svg
+*.dot
 out.txt
 *.zip
 graphs/
+patterns/*.py
 
 
 # Byte-compiled / optimized / DLL files

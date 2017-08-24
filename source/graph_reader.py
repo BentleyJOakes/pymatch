@@ -5,7 +5,7 @@ def get_next_word(f):
     return int(both, 16)
 
 def read_unlabelled_graph(filename):
-    print(filename)
+    print("Reading graph: " + filename)
     with open(filename, "rb") as f:
         length = get_next_word(f)
 
