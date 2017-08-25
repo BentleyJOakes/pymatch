@@ -6,7 +6,7 @@ from source.himesis_creator import *
 from source.matching import *
 from source.plotting import *
 
-MAX_SIZE = 16
+MAX_SIZE = 64
 
 graph_dir = "./graphs"
 
