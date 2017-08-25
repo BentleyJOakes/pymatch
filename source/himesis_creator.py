@@ -53,7 +53,7 @@ def create_himesis(name, mx):
     #graph_to_dot(name, h)
     return h
 
-def create_matcher(name, graph):
+def create_matcher(name, graph, new_matcher = False):
 
     rd = {name : graph}
 
@@ -67,5 +67,10 @@ def create_matcher(name, graph):
     matcher_dict = pyram.get_match_pattern(rd)
 
     matcher = list(matcher_dict.values())[0]
+
+    if new_matcher:
+        m = matcher.condition
+        matcher = Matcher(m, disambig_matching = True)
+
     return matcher
 
