@@ -23,6 +23,11 @@ def plot_times(times):
         t = np.arange(0., 5., 0.2)
 
         # red dashes, blue squares and green triangles
-        plt.plot(range(100), times[key]['old'], 'r*', range(100), times[key]['new'], 'bs',)
+        #plt.plot(range(100), times[key]['old'], 'r*', range(100), times[key]['new'], 'bs',)
 
-        plt.show()
+        data = [times[key]['old'], times[key]['new']]
+        plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
+        #plt.show()
+
+        results_dir = "results/"
+        plt.savefig(results_dir + "/" + key + '.png', bbox_inches = 'tight')
