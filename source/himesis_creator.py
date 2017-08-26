@@ -53,6 +53,14 @@ def create_himesis(name, mx):
     #graph_to_dot(name, h)
     return h
 
+def remove_match_apply(graph):
+    # go through the graph and take away
+    # the match/apply nodes and edges
+    # (for speed of matching)
+
+    graph.delete_nodes([0])
+    return graph
+
 def create_matcher(name, graph, new_matcher = False):
 
     rd = {name : graph}
@@ -64,13 +72,13 @@ def create_matcher(name, graph, new_matcher = False):
     #graph_to_dot(name, graph)
 
     pyram = PyRamify(draw_svg=False)
-    matcher_dict = pyram.get_match_pattern(rd)
+    matcher_dict = pyram.get_match_pattern(rd, build_matcher = False)
 
-    matcher = list(matcher_dict.values())[0]
+    match_graph = list(matcher_dict.values())[0]
 
-    if new_matcher:
-        m = matcher.condition
-        matcher = Matcher(m, disambig_matching = True)
+    match_graph = remove_match_apply(match_graph)
+
+    matcher = Matcher(match_graph, disambig_matching = new_matcher)
 
     return matcher
 
