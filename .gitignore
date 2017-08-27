@@ -4,6 +4,7 @@ out.txt
 *.zip
 graphs/
 patterns/*.py
+*.times
 
 
 # Byte-compiled / optimized / DLL files

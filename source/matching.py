@@ -1,6 +1,5 @@
-
 from t_core.messages import Packet
-from source.himesis_creator import *
+from source.himesis_creator import create_matcher
 import time
 
 def do_matching(name, first, second, use_new_matcher = False):
@@ -9,7 +8,7 @@ def do_matching(name, first, second, use_new_matcher = False):
     # print(first_matcher)
 
 
-    #print("Matching graphs: " + k)
+    # print("Matching graphs: " + k)
     start_time = time.time()
 
     p = Packet()
@@ -22,8 +21,8 @@ def do_matching(name, first, second, use_new_matcher = False):
 
     if not first_matcher.is_success:
         raise Exception("Match not found!")
-    #print(first_matcher.is_success)
+    # print(first_matcher.is_success)
 
-    #print("Matching took " + str(match_time) + " seconds")
+    # print("Matching took " + str(match_time) + " seconds")
 
     return match_time

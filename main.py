@@ -1,21 +1,47 @@
 import os
+import sys
+sys.path.append(os.path.expanduser("~/Projects/SyVOLT/"))
 
-
-from source.graph_reader import read_unlabelled_graph
-from source.himesis_creator import *
-from source.matching import *
+from source.worker import Worker
 from source.plotting import *
 
-MAX_SIZE = 16
+import multiprocessing
+from multiprocessing import Manager, Queue
+
+MAX_SIZE = 64
+
+verbosity = 0
 
 graph_dir = "./graphs"
 
-graph_files = {}
+
+
+do_parallel = True
+
+if do_parallel:
+    cpu_count = multiprocessing.cpu_count()
+    print("CPU Count: " + str(cpu_count))
+else:
+    cpu_count = 1
+    print("Restricting to one thread")
+
+manager = Manager()
+dir_queue = manager.Queue()
+results_queue = manager.Queue()
+
+workers = []
+
+for i in range(cpu_count):
+    new_worker = Worker(i, verbosity, dir_queue, results_queue)
+    workers.append(new_worker)
+
+for worker in workers:
+    worker.start()
 
 print("Loading...")
 for first in sorted(os.listdir(graph_dir)):
 
-    if "graphsdb" in first:
+    if "graphsdb" in first or ".git" in first:
         continue
 
     #print("First: " + first)
@@ -24,54 +50,20 @@ for first in sorted(os.listdir(graph_dir)):
         #print("\tSecond: " + second)
         for third in sorted(os.listdir(graph_dir + "/" + first + "/" + second)):
             #print("\t\tThird: " + third)
-            for graph_file in sorted(os.listdir(graph_dir + "/" + first + "/" + second + "/" + third)):
-                print("\t\t\t" + graph_file)
 
-                #if not "s16" in graph_file:
-                #    continue
+            worker_dir = graph_dir + "/" + first + "/" + second + "/" + third
+            dir_queue.put(worker_dir)
 
-                graph_name = graph_file.split(".")[0] + "_" + graph_file.split(".")[1][-2:]
-                graph_AB = graph_file.split(".")[1][0]
 
-                graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
+for i in range(len(workers)):
+    dir_queue.put(None)
 
-                if graph_size > MAX_SIZE:
-                    continue
+for worker in workers:
+    worker.join()
+#
+# for worker in workers:
+#     result = results_queue.get()
+#     print(result)
 
-                #print(graph_name)
-                #print(graph_AB)
-
-                graph_filename = graph_dir + "/" + first + "/" + second + "/" + third + "/" + graph_file
-                mx = read_unlabelled_graph(graph_filename)
-                h = create_himesis(graph_file.split("/")[-1], mx)
-
-                if graph_AB == "A":
-                    graph_files[graph_name] = [h, None]
-                elif graph_AB == "B":
-                    graph_files[graph_name][1] = h
-
-            break
-        break
-    break
-
-print("Starting matching...")
-times = {}
-for k, v in graph_files.items():
-
-    first = v[0]
-    second = v[1]
-
-    old_match_time = do_matching(k, first, second, use_new_matcher = False)
-    new_match_time = do_matching(k, first, second, use_new_matcher = True)
-
-    split_name = k.split("_")
-    name = split_name[0] + "_" + split_name[1] + "_" + split_name[2]
-
-    if name not in times.keys():
-        times[name] = {"old" : [], "new" : []}
-
-    times[name]["old"].append(old_match_time)
-    times[name]["new"].append(new_match_time)
-
-print("Starting plotting...")
-plot_times(times)
+#print("Starting plotting...")
+#plot_times(times)
