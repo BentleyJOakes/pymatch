@@ -67,8 +67,8 @@ def create_matcher(name, graph, new_matcher = False):
 
     #print(graph)
 
-    out_dir = "./patterns/"
-    file_name = graph.compile(out_dir)
+    # out_dir = "./patterns/"
+    # file_name = graph.compile(out_dir)
     #graph_to_dot(name, graph)
 
     pyram = PyRamify(draw_svg=False)

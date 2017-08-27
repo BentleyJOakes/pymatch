@@ -3,7 +3,7 @@ import sys
 sys.path.append(os.path.expanduser("~/Projects/SyVOLT/"))
 
 from source.worker import Worker
-from source.plotting import *
+from source.reading import load_match_counts
 
 import multiprocessing
 from multiprocessing import Manager, Queue
@@ -14,7 +14,7 @@ verbosity = 0
 
 graph_dir = "./graphs"
 
-
+match_counts = load_match_counts(graph_dir + "/graphsdb/")
 
 do_parallel = True
 
@@ -32,7 +32,7 @@ results_queue = manager.Queue()
 workers = []
 
 for i in range(cpu_count):
-    new_worker = Worker(i, verbosity, dir_queue, results_queue)
+    new_worker = Worker(i, verbosity, dir_queue, results_queue, match_counts)
     workers.append(new_worker)
 
 for worker in workers:
@@ -60,6 +60,7 @@ for i in range(len(workers)):
 
 for worker in workers:
     worker.join()
+
 #
 # for worker in workers:
 #     result = results_queue.get()

@@ -2,7 +2,8 @@ from t_core.messages import Packet
 from source.himesis_creator import create_matcher
 import time
 
-def do_matching(name, first, second, use_new_matcher = False):
+
+def do_matching(name, first, second, match_count, use_new_matcher = False):
     first_matcher = create_matcher(name, first, new_matcher = use_new_matcher)
 
     # print(first_matcher)
@@ -13,8 +14,10 @@ def do_matching(name, first, second, use_new_matcher = False):
 
     p = Packet()
     p.graph = second
-    first_matcher.max = 1
+    first_matcher.max = match_count + 1
     first_matcher.packet_in(p)
+
+    num_matches = len(p.match_sets)
 
     end_time = time.time()
     match_time = end_time - start_time
@@ -25,4 +28,4 @@ def do_matching(name, first, second, use_new_matcher = False):
 
     # print("Matching took " + str(match_time) + " seconds")
 
-    return match_time
+    return num_matches, match_time
