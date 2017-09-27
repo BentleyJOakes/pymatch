@@ -7,6 +7,9 @@ from multiprocessing import Process
 from source.reading import read_unlabelled_graph
 from source.matching import do_matching
 
+from util.progress import ProgressBar
+MAX_SIZE = 196
+
 class Worker(Process):
 
     def __init__(self, worker_id, verbosity, dir_queue, results_queue, match_counts):
@@ -17,6 +20,8 @@ class Worker(Process):
         self.match_counts = match_counts
 
         self.verbosity = verbosity
+
+        self.progress_bar = None
 
     def run(self):
 
@@ -52,17 +57,17 @@ class Worker(Process):
 
             #print("\t\t\t" + graph_file)
 
-            if not "s16" in graph_file:
-               continue
+            #if not "s16" in graph_file:
+            #   continue
 
             name_split = graph_file.split(".")
             graph_name = name_split[0] + "_" + name_split[1][-2:]
             graph_AB = name_split[1][0]
 
-            #graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
+            graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
 
-            #if graph_size > MAX_SIZE:
-            #    continue
+            if graph_size > MAX_SIZE:
+                continue
 
             #print(graph_name)
             #print(graph_AB)
@@ -82,7 +87,12 @@ class Worker(Process):
         print("Starting matching...")
         times = {}
 
+        self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
+        i = 0
         for k, v in graph_files.items():
+
+            self.progress_bar.update_progress(i)
+            i += 1
 
             name = v[0]
             graph_A = v[1]
