@@ -100,15 +100,24 @@ class Worker(Process):
 
             match_count = self.match_counts[name]
 
-            old_num_matches, old_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
-            new_num_matches, new_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
+            try:
+                old_num_matches, old_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
+            except AssertionError:
+                old_num_matches = 0
+                old_match_time = None
 
-            if old_num_matches != new_num_matches:
-                print("Match count mismatch:")
-                print(match_count)
-                print(old_num_matches)
-                print(new_num_matches)
-                print("\n")
+            try:
+                new_num_matches, new_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
+            except AssertionError:
+                new_num_matches = 0
+                new_match_time = None
+
+            # if old_num_matches != new_num_matches:
+            #     print("Match count mismatch:")
+            #     print(match_count)
+            #     print(old_num_matches)
+            #     print(new_num_matches)
+            #     print("\n")
 
             split_name = k.split("_")
             name = split_name[0] + "_" + split_name[1] + "_" + split_name[2]
@@ -116,8 +125,11 @@ class Worker(Process):
             if name not in times:
                 times[name] = [[], []]
 
-            times[name][0].append(old_match_time)
-            times[name][1].append(new_match_time)
+            if old_match_time:
+                times[name][0].append(old_match_time)
+
+            if new_match_time:
+                times[name][1].append(new_match_time)
 
         return times
 

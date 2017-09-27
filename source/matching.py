@@ -1,8 +1,9 @@
 from t_core.messages import Packet
 from source.himesis_creator import create_matcher
 import time
+import timeout_decorator
 
-
+@timeout_decorator.timeout(60, use_signals = False, )
 def do_matching(name, first, second, match_count, use_new_matcher = False):
     first_matcher = create_matcher(name, first, new_matcher = use_new_matcher)
 

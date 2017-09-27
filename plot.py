@@ -38,16 +38,22 @@ def plot_times(times_file, old_times, new_times):
 
 def load_times_dir(times_dir):
     for times_file in sorted(os.listdir(times_dir)):
+        #print("Loading: " + times_file)
         with open(times_dir + "/" + times_file) as f:
             old_times_str = f.readline().strip()
             new_times_str = f.readline().strip()
 
             old_times_str = old_times_str.replace("[", "").replace("]", "")
             old_times = old_times_str.split(", ")
+
+            if old_times == ['']: old_times = []
+
             old_times = list(map(float, old_times))
 
             new_times_str = new_times_str.replace("[", "").replace("]", "")
             new_times = new_times_str.split(", ")
+
+            if new_times == ['']: new_times = []
             new_times = list(map(float, new_times))
 
             plot_times(times_file, old_times, new_times)
