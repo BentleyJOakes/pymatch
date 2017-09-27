@@ -9,12 +9,12 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
     # print(first_matcher)
 
 
-    # print("Matching graphs: " + k)
+    #print("Matching graphs: " + name + str(match_count))
     start_time = time.time()
 
     p = Packet()
     p.graph = second
-    first_matcher.max = match_count + 1
+    first_matcher.max = match_count
     first_matcher.packet_in(p)
 
     num_matches = len(p.match_sets)
@@ -26,6 +26,6 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
         raise Exception("Match not found!")
     # print(first_matcher.is_success)
 
-    # print("Matching took " + str(match_time) + " seconds")
+    #print("Matching took " + str(match_time) + " seconds")
 
     return num_matches, match_time
