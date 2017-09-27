@@ -8,8 +8,6 @@ from source.reading import load_match_counts
 import multiprocessing
 from multiprocessing import Manager, Queue
 
-MAX_SIZE = 64
-
 verbosity = 0
 
 graph_dir = "./graphs"
@@ -48,8 +46,13 @@ for first in sorted(os.listdir(graph_dir)):
 
     for second in sorted(os.listdir(graph_dir + "/" + first)):
         #print("\tSecond: " + second)
+
+        #if "bvg" in second:
+        #    continue
+
         for third in sorted(os.listdir(graph_dir + "/" + first + "/" + second)):
-            #print("\t\tThird: " + third)
+            #third_dir = graph_dir + "/" + first + "/" + second + "/" + third
+            #print("\t\tDir: " + third_dir)
 
             worker_dir = graph_dir + "/" + first + "/" + second + "/" + third
             dir_queue.put(worker_dir)
