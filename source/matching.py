@@ -3,7 +3,7 @@ from source.himesis_creator import create_matcher
 import time
 import timeout_decorator
 
-@timeout_decorator.timeout(60, use_signals = False, )
+@timeout_decorator.timeout(5 * 60, use_signals = False, )
 def do_matching(name, first, second, match_count, use_new_matcher = False):
     first_matcher, first_decompose_time = create_matcher(name, first, new_matcher = use_new_matcher)
 
