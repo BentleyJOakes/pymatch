@@ -5,7 +5,7 @@ import timeout_decorator
 
 @timeout_decorator.timeout(60, use_signals = False, )
 def do_matching(name, first, second, match_count, use_new_matcher = False):
-    first_matcher = create_matcher(name, first, new_matcher = use_new_matcher)
+    first_matcher, first_decompose_time = create_matcher(name, first, new_matcher = use_new_matcher)
 
     # print(first_matcher)
 
@@ -18,6 +18,8 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
     first_matcher.max = match_count
     first_matcher.packet_in(p)
 
+    second_decompose_time = first_matcher.decomposing_time
+
     num_matches = len(p.match_sets)
 
     end_time = time.time()
@@ -29,4 +31,4 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
 
     #print("Matching took " + str(match_time) + " seconds")
 
-    return num_matches, match_time
+    return num_matches, match_time, first_decompose_time, second_decompose_time

@@ -80,5 +80,7 @@ def create_matcher(name, graph, new_matcher = False):
 
     matcher = Matcher(match_graph, disambig_matching = new_matcher)
 
-    return matcher
+    decompose_time = matcher.decomposing_time
+
+    return matcher, decompose_time
 

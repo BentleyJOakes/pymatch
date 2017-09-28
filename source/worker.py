@@ -98,16 +98,18 @@ class Worker(Process):
             graph_A = v[1]
             graph_B = v[2]
 
+            first_decompose, second_decompose = None, None
+
             match_count = self.match_counts[name]
 
             try:
-                old_num_matches, old_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
+                old_num_matches, old_match_time, _, _ = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
             except AssertionError:
                 old_num_matches = 0
                 old_match_time = None
 
             try:
-                new_num_matches, new_match_time = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
+                new_num_matches, new_match_time, first_decompose, second_decompose = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
             except AssertionError:
                 new_num_matches = 0
                 new_match_time = None
@@ -123,13 +125,16 @@ class Worker(Process):
             name = split_name[0] + "_" + split_name[1] + "_" + split_name[2]
 
             if name not in times:
-                times[name] = [[], []]
+                times[name] = [[], [], [], []]
 
             if old_match_time:
                 times[name][0].append(old_match_time)
 
             if new_match_time:
                 times[name][1].append(new_match_time)
+
+            times[name][2].append(first_decompose)
+            times[name][3].append(second_decompose)
 
         return times
 
@@ -141,3 +146,7 @@ class Worker(Process):
                 f.write(str(times[name][0]))
                 f.write("\n")
                 f.write(str(times[name][1]))
+                f.write("\n")
+                f.write(str(times[name][2]))
+                f.write("\n")
+                f.write(str(times[name][3]))
