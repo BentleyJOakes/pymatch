@@ -7,6 +7,8 @@ class Plotter:
 
     def __init__(self):
         self.decompose_times = defaultdict(list)
+        self.old_matching_times = defaultdict(list)
+        self.new_matching_times = defaultdict(list)
 
     def plot_times(self, times_file, old_times, new_times):
 
@@ -55,7 +57,31 @@ class Plotter:
         plt.ylabel('Time (s)')
         plt.title("Time for Decomposing During Matching")
         results_dir = "results/"
-        plt.savefig(results_dir + "/" + name + '.png', bbox_inches = 'tight')
+        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight')
+        plt.close()
+
+    def plot_matching_times(self):
+        name = "matching_times"
+        labels = []
+        for key in sorted(self.new_matching_times.keys()):
+            labels.append("Old-" + str(key))
+            labels.append("New-" + str(key))
+
+        fig = plt.figure()
+        fig.set_size_inches(18.5, 10.5)
+        
+        data = []
+        for k in sorted(self.old_matching_times.keys()):
+            data.append(self.old_matching_times[k])
+            data.append(self.new_matching_times[k])
+
+        plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
+        plt.xlabel('Graph size')
+        plt.ylabel('Time (s)')
+        plt.title("Time for Matching")
+
+        results_dir = "results/"
+        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = 100)
         plt.close()
 
     def parse_line(self, line):
@@ -86,7 +112,11 @@ class Plotter:
 
                 self.decompose_times[size] += decompose_time
 
+                self.old_matching_times[size] += old_times
+                self.new_matching_times[size] += new_times
+
                 self.plot_times(times_file, old_times, new_times)
+
 
 
 
@@ -96,3 +126,4 @@ if __name__ == "__main__":
     plotter = Plotter()
     plotter.load_times_dir(times_dir)
     plotter.plot_decompose_times()
+    plotter.plot_matching_times()
