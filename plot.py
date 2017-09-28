@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from collections import defaultdict
 import os
 
 class Plotter:
 
     def __init__(self):
-        self.decompose_times = []
+        self.decompose_times = defaultdict(list)
 
     def plot_times(self, times_file, old_times, new_times):
 
@@ -47,12 +47,13 @@ class Plotter:
 
     def plot_decompose_times(self):
         name = "decompose_times"
-        labels = ['Decompose Time']
+        labels = sorted(self.decompose_times.keys())
         plt.figure()
-        data = [self.decompose_times]
+        data = [list(self.decompose_times[k]) for k in sorted(self.decompose_times.keys())]
         plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
+        plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
-        plt.title("Decomposing Times")
+        plt.title("Time for Decomposing During Matching")
         results_dir = "results/"
         plt.savefig(results_dir + "/" + name + '.png', bbox_inches = 'tight')
         plt.close()
@@ -80,9 +81,10 @@ class Plotter:
                 first_decompose = self.parse_line(first_decompose_str)
                 second_decompose = self.parse_line(second_decompose_str)
 
+                size = int(times_file.split("_")[2][1:].replace(".times",""))
                 decompose_time = first_decompose + second_decompose
 
-                self.decompose_times += decompose_time
+                self.decompose_times[size] += decompose_time
 
                 self.plot_times(times_file, old_times, new_times)
 
