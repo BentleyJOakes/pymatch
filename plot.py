@@ -19,6 +19,9 @@ class Plotter:
 
         self.max_time_line = "#333333"
 
+        self.figure_size_x, self.figure_size_y = 18.5, 10.5
+        self.figure_dpi = 150
+
     def plot_times(self, times_file, old_times, new_times):
 
         name = times_file.replace(".times","")
@@ -61,14 +64,15 @@ class Plotter:
         print("Creating decompose time graph...")
         name = "decompose_times"
         labels = sorted(self.decompose_times.keys())
-        plt.figure()
+        fig = plt.figure()
+        fig.set_size_inches(self.figure_size_x, self.figure_size_y)
         data = [list(self.decompose_times[k]) for k in sorted(self.decompose_times.keys())]
-        plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
+        plt.boxplot(data, labels = labels, showmeans = True, meanline = True, sym = '+')
         plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
         plt.title("Time for Decomposing During Matching")
         results_dir = "results/"
-        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight')
+        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
 
     def plot_matching_times(self):
@@ -76,7 +80,7 @@ class Plotter:
         name = "matching_times"
 
         fig = plt.figure()
-        fig.set_size_inches(18.5, 10.5)
+        fig.set_size_inches(self.figure_size_x, self.figure_size_y)
         i = 0.5
         for k in sorted(self.new_matching_times.keys()):
             data = [self.old_matching_times[k], self.new_matching_times[k]]
@@ -126,7 +130,7 @@ class Plotter:
         plt.title("Time for Matching")
 
         results_dir = "results/"
-        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = 120)
+        plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
 
     def parse_line(self, line):
@@ -186,5 +190,5 @@ if __name__ == "__main__":
     times_dir = "./results/times/"
     plotter = Plotter()
     plotter.load_times_dir(times_dir)
-    # plotter.plot_decompose_times()
+    plotter.plot_decompose_times()
     plotter.plot_matching_times()
