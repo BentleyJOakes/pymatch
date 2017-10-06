@@ -8,7 +8,8 @@ from source.reading import read_unlabelled_graph
 from source.matching import do_matching
 
 from util.progress import ProgressBar
-MAX_SIZE = 196
+MAX_SIZE = 2000
+MIN_SIZE = 0
 
 class Worker(Process):
 
@@ -42,9 +43,9 @@ class Worker(Process):
 
             print("Time taken for loading: " + str(end_time - start_time))
 
-            times = self.match_graphs(graph_files)
+            self.match_graphs(graph_files)
 
-            self.print_times(times)
+            #self.print_times(times)
             #self.results_queue.put(times)
 
         print("Finished worker #" + self.id)
@@ -66,7 +67,7 @@ class Worker(Process):
 
             graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
 
-            if graph_size > MAX_SIZE:
+            if graph_size <= MIN_SIZE or graph_size > MAX_SIZE:
                 continue
 
             #print(graph_name)
@@ -84,7 +85,7 @@ class Worker(Process):
         return graph_files
 
     def match_graphs(self, graph_files):
-        print("Starting matching...")
+        print("Worker " + self.id + ": Starting matching of " + str(len(graph_files)) + " files...")
         times = {}
 
         self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
@@ -125,28 +126,40 @@ class Worker(Process):
             name = split_name[0] + "_" + split_name[1] + "_" + split_name[2]
 
             if name not in times:
-                times[name] = [[], [], [], []]
+                times[name] = [[], [], [], [], 0, 0, 0]
 
             if old_match_time:
                 times[name][0].append(old_match_time)
+            else:
+                times[name][4] += 1
 
             if new_match_time:
                 times[name][1].append(new_match_time)
+            else:
+                times[name][5] += 1
 
             times[name][2].append(first_decompose)
             times[name][3].append(second_decompose)
 
-        return times
+            times[name][6] += 1
 
-    def print_times(self, times):
+            if times[name][6] == 100:
+                self.print_times(name, times)
+        #return times
+
+    def print_times(self, name, times):
         results_dir = "./results/times/"
 
-        for name in times.keys():
-            with open(results_dir + name + ".times", 'w') as f:
-                f.write(str(times[name][0]))
-                f.write("\n")
-                f.write(str(times[name][1]))
-                f.write("\n")
-                f.write(str(times[name][2]))
-                f.write("\n")
-                f.write(str(times[name][3]))
+        #for name in times.keys():
+        with open(results_dir + name + ".times", 'w') as f:
+            f.write(str(times[name][0]))
+            f.write("\n")
+            f.write(str(times[name][1]))
+            f.write("\n")
+            f.write(str(times[name][2]))
+            f.write("\n")
+            f.write(str(times[name][3]))
+            f.write("\n")
+            f.write(str(times[name][4]))
+            f.write("\n")
+            f.write(str(times[name][5]))
