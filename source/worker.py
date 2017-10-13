@@ -8,12 +8,11 @@ from source.reading import read_unlabelled_graph
 from source.matching import do_matching
 
 from util.progress import ProgressBar
-MAX_SIZE = 2000
-MIN_SIZE = 0
+
 
 class Worker(Process):
 
-    def __init__(self, worker_id, verbosity, dir_queue, results_queue, match_counts):
+    def __init__(self, worker_id, verbosity, dir_queue, results_queue, match_counts, min_size, max_size):
         super(Worker, self).__init__()
         self.id = str(worker_id)
         self.dir_queue = dir_queue
@@ -21,6 +20,9 @@ class Worker(Process):
         self.match_counts = match_counts
 
         self.verbosity = verbosity
+
+        self.min_size = min_size
+        self.max_size = max_size
 
         self.progress_bar = None
 
@@ -67,7 +69,7 @@ class Worker(Process):
 
             graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
 
-            if graph_size <= MIN_SIZE or graph_size > MAX_SIZE:
+            if graph_size <= self.min_size or graph_size > self.max_size:
                 continue
 
             #print(graph_name)

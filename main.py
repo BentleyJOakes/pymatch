@@ -10,9 +10,23 @@ from multiprocessing import Manager, Queue
 
 verbosity = 0
 
+
+MIN_SIZE = 0
+MAX_SIZE = 4000
+
+if len(sys.argv) > 1:
+    MIN_SIZE = int(sys.argv[1])
+if len(sys.argv) > 2:
+    MAX_SIZE = int(sys.argv[2])
+
+
 graph_dir = "./graphs"
 
 match_counts = load_match_counts(graph_dir + "/graphsdb/")
+
+print("Starting matching")
+print("Min: " + str(MIN_SIZE))
+print("Max: " + str(MAX_SIZE))
 
 do_parallel = True
 
@@ -30,7 +44,7 @@ results_queue = manager.Queue()
 workers = []
 
 for i in range(cpu_count):
-    new_worker = Worker(i, verbosity, dir_queue, results_queue, match_counts)
+    new_worker = Worker(i, verbosity, dir_queue, results_queue, match_counts, min_size=MIN_SIZE, max_size=MAX_SIZE)
     workers.append(new_worker)
 
 for worker in workers:
