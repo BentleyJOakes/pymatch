@@ -17,6 +17,7 @@ class Plotter:
         self.new_matcher_colour = "#2233dd"
         self.new_matcher_colour2 = "1.00"
 
+        self.max_time = 20 * 60
         self.max_time_line = "#333333"
 
         self.figure_size_x, self.figure_size_y = 18.5, 10.5
@@ -116,7 +117,7 @@ class Plotter:
         # draw temporary red and blue lines and use them to create a legend
         hB, = plt.plot([1, 1], color=self.old_matcher_colour)
         hR, = plt.plot([1, 1], color=self.new_matcher_colour)
-        hMAX = plt.hlines(y=300, xmin = 0, xmax=len(keys) * 2, color = self.max_time_line, linestyles = 'dashed')
+        hMAX = plt.hlines(y=self.max_time, xmin = 0, xmax=len(keys) * 2, color = self.max_time_line, linestyles = 'dashed')
         plt.legend((hB, hR, hMAX), ('Old Matcher', 'New Matcher', 'Cutoff Time'), bbox_to_anchor=(0.98, 0.15))
         hB.set_visible(False)
         hR.set_visible(False)
@@ -139,7 +140,7 @@ class Plotter:
 
         if data == ['']: data = []
 
-        data = list(map(float, data))
+        data = [float(x) for x in data if x and x != 'None']
         return data
 
     def load_times_dir(self, times_dir):
