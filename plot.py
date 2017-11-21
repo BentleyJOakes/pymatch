@@ -14,6 +14,9 @@ class Plotter:
         self.old_failures = defaultdict(int)
         self.new_failures = defaultdict(int)
 
+        self.old_matching_times_types = defaultdict(lambda: defaultdict(list))
+        self.new_matching_times_types = defaultdict(lambda: defaultdict(list))
+
         self.old_matcher_colour = '#dd2233'
         self.old_matcher_colour2 = "0.75"
 
@@ -79,15 +82,15 @@ class Plotter:
         plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
 
-    def plot_matching_times(self):
-        print("Creating matching time graph...")
-        name = "matching_times"
+    def plot_matching_times(self, old_times, new_times, suffix):
+        print("Creating matching time graph " + suffix + "...")
+        name = "matching_times" + suffix
 
         fig = plt.figure()
         fig.set_size_inches(self.figure_size_x, self.figure_size_y)
         i = 0.5
-        for k in sorted(self.new_matching_times.keys()):
-            data = [self.old_matching_times[k], self.new_matching_times[k]]
+        for k in sorted(old_times.keys()):
+            data = [old_times[k], new_times[k]]
 
             dividing_line = i+1.5
             plt.axvline(dividing_line, ls = "-", color = "0.75")
@@ -110,7 +113,7 @@ class Plotter:
         # plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
         ax = plt.axes()
 
-        keys = [""] + sorted(self.new_matching_times.keys())
+        keys = [""] + sorted(new_times.keys())
         ax.set_xticklabels(keys)
 
         m = 0
@@ -183,6 +186,12 @@ class Plotter:
 
                 self.decompose_times[size] += decompose_time
 
+                s = times_file.split("_")
+                graph_type = s[0]+s[1]
+
+                self.old_matching_times_types[graph_type][size] += old_times
+                self.new_matching_times_types[graph_type][size] += new_times
+
                 self.old_matching_times[size] += old_times
                 self.new_matching_times[size] += new_times
 
@@ -215,5 +224,9 @@ if __name__ == "__main__":
     times_dir = "./results/times/"
     plotter = Plotter()
     plotter.load_times_dir(times_dir)
-    plotter.plot_decompose_times()
-    plotter.plot_matching_times()
+    #plotter.plot_decompose_times()
+    plotter.plot_matching_times(plotter.old_matching_times, plotter.new_matching_times, "")
+
+    for key in plotter.old_matching_times_types:
+        #print(key)
+        plotter.plot_matching_times(plotter.old_matching_times_types[key], plotter.new_matching_times_types[key], "_" + key)
