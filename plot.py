@@ -11,6 +11,9 @@ class Plotter:
         self.old_matching_times = defaultdict(list)
         self.new_matching_times = defaultdict(list)
 
+        self.old_failures = defaultdict(int)
+        self.new_failures = defaultdict(int)
+
         self.old_matcher_colour = '#dd2233'
         self.old_matcher_colour2 = "0.75"
 
@@ -122,6 +125,8 @@ class Plotter:
         hB.set_visible(False)
         hR.set_visible(False)
 
+
+
         plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
         plt.yscale('log')
@@ -133,6 +138,14 @@ class Plotter:
         results_dir = "results/"
         plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
+
+        print("Old failures")
+        for k, v in sorted(self.old_failures.items()):
+            print("Size: {0} - Failures: {1}".format(k, v))
+
+        print("New failures")
+        for k, v in sorted(self.new_failures.items()):
+            print("Size: {0} - Failures: {1}".format(k, v))
 
     def parse_line(self, line):
         line = line.replace("[", "").replace("]", "")
@@ -157,6 +170,14 @@ class Plotter:
                 first_decompose = self.parse_line(first_decompose_str)
                 second_decompose = self.parse_line(second_decompose_str)
 
+                first_failures = int(f.readline().strip())
+                second_failures = int(f.readline().strip())
+
+                if first_failures > 0:
+                    print("Failure: First - " + times_file + " " + str(first_failures))
+                if second_failures > 0:
+                    print("Failure: Second - " + times_file + " " + str(second_failures))
+
                 size = int(times_file.split("_")[2][1:].replace(".times",""))
                 decompose_time = first_decompose + second_decompose
 
@@ -164,6 +185,9 @@ class Plotter:
 
                 self.old_matching_times[size] += old_times
                 self.new_matching_times[size] += new_times
+
+                self.old_failures[size] += first_failures
+                self.new_failures[size] += second_failures
 
                 #self.plot_times(times_file, old_times, new_times)
 
