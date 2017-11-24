@@ -10,9 +10,9 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
 
     # print(first_matcher)
 
-    self.old_recursion_limit = sys.getrecursionlimit()
+    old_recursion_limit = sys.getrecursionlimit()
     expected_max_recursion_level = first.vcount() + second.vcount()
-    if self.old_recursion_limit < 1.5 * expected_max_recursion_level:
+    if old_recursion_limit < 1.5 * expected_max_recursion_level:
         sys.setrecursionlimit(int(1.5 * expected_max_recursion_level))
 
 
@@ -25,10 +25,11 @@ def do_matching(name, first, second, match_count, use_new_matcher = False):
 
     try:
         first_matcher.packet_in(p)
-    except Exception:
-        print("Matching failed!")
-    except RuntimeError:
-        print("Runtime Error - Matching failed!")
+    except RuntimeError as e:
+        raise Exception("Runtime Error - Matching failed! " + str(e))
+    except Exception as e:
+        raise Exception("Matching failed! " + str(e))
+
 
     second_decompose_time = first_matcher.decomposing_time
 

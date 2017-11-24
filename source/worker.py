@@ -117,14 +117,14 @@ class Worker(Process):
             try:
                 old_num_matches, old_match_time, _, _ = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
             except Exception as e:
-                print("Old matcher Exception: " + str(e))
+                raise Exception("Old matcher Exception: " + str(e))
                 old_num_matches = 0
                 old_match_time = None
 
             try:
                 new_num_matches, new_match_time, first_decompose, second_decompose = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
             except Exception as e:
-                print("New matcher Exception: " + str(e))
+                raise Exception("New matcher Exception: " + str(e))
                 new_num_matches = 0
                 new_match_time = None
 
