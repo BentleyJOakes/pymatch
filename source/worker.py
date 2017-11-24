@@ -69,7 +69,10 @@ class Worker(Process):
 
             graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
 
-            if graph_size <= self.min_size or graph_size > self.max_size:
+            if graph_size <= self.min_size:
+                continue
+
+            if graph_size > self.max_size > 0:
                 continue
 
             #print(graph_name)
@@ -90,11 +93,14 @@ class Worker(Process):
         print("Worker " + self.id + ": Starting matching of " + str(len(graph_files)) + " files...")
         times = {}
 
-        self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
+        if self.id == "0":
+
+            self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
         i = 0
         for k, v in graph_files.items():
 
-            self.progress_bar.update_progress(i)
+            if self.progress_bar:
+                self.progress_bar.update_progress(i)
             i += 1
 
             name = v[0]
@@ -103,17 +109,22 @@ class Worker(Process):
 
             first_decompose, second_decompose = None, None
 
-            match_count = self.match_counts[name]
+            try:
+                match_count = self.match_counts[name]
+            except KeyError:
+                match_count = 0
 
             try:
                 old_num_matches, old_match_time, _, _ = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
-            except AssertionError:
+            except Exception as e:
+                print("Old matcher Exception: " + str(e))
                 old_num_matches = 0
                 old_match_time = None
 
             try:
                 new_num_matches, new_match_time, first_decompose, second_decompose = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
-            except AssertionError:
+            except Exception as e:
+                print("New matcher Exception: " + str(e))
                 new_num_matches = 0
                 new_match_time = None
 

@@ -1,4 +1,5 @@
 import os
+import binascii
 
 def load_match_counts(graph_dir):
     match_counts = {}
@@ -11,6 +12,7 @@ def load_match_counts(graph_dir):
         if not os.path.isfile(graph_dir + "/" + count_file):
             continue
 
+        print("Reading file: " + count_file)
         with open(graph_dir + "/" + count_file) as f:
             for line in f.readlines():
                 line = line.strip()
@@ -23,7 +25,9 @@ def load_match_counts(graph_dir):
 def get_next_word(f):
     lower = f.read(1)
     higher = f.read(1)
-    return int(higher.hex() + lower.hex(), 16)
+    strHexLower = str(binascii.hexlify(lower),'utf-8')
+    strHexHigher = str(binascii.hexlify(higher),'utf-8')
+    return int(strHexHigher + strHexLower, 16)
 
 
 def read_unlabelled_graph(filename):

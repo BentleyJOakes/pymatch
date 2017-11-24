@@ -12,7 +12,7 @@ verbosity = 0
 
 
 MIN_SIZE = 0
-MAX_SIZE = 4000
+MAX_SIZE = -1
 
 if len(sys.argv) > 1:
     MIN_SIZE = int(sys.argv[1])
