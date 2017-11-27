@@ -9,7 +9,6 @@ from source.matching import do_matching
 
 from util.progress import ProgressBar
 
-import os
 
 class Worker(Process):
 
@@ -26,8 +25,6 @@ class Worker(Process):
         self.max_size = max_size
 
         self.progress_bar = None
-
-        self.results_dir = "./results/times/"
 
     def run(self):
 
@@ -58,10 +55,8 @@ class Worker(Process):
     def load_dir(self, graph_dir):
 
         graph_files = {}
-        #print(graph_dir)
 
         for graph_file in sorted(os.listdir(graph_dir)):
-            #print(graph_file)
 
             #print("\t\t\t" + graph_file)
 
@@ -70,11 +65,6 @@ class Worker(Process):
 
             name_split = graph_file.split(".")
             graph_name = name_split[0] + "_" + name_split[1][-2:]
-
-            times_file = os.path.join(self.results_dir, graph_name[:-3] + ".times")
-            if os.path.isfile(times_file):
-                continue
-
             graph_AB = name_split[1][0]
 
             graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
@@ -89,17 +79,12 @@ class Worker(Process):
             #print(graph_AB)
 
             graph_filename = graph_dir + "/" + graph_file
-
-            try:
-                mx = read_unlabelled_graph(graph_filename)
-                h = create_himesis(graph_file, mx)
-            except ValueError:
-                print("Error: Could not read graph: " + graph_filename)
-                continue
+            mx = read_unlabelled_graph(graph_filename)
+            h = create_himesis(graph_file, mx)
 
             if graph_AB == "A":
                 graph_files[graph_name] = [graph_file, h, None]
-            elif graph_AB == "B" and graph_name in graph_files:
+            elif graph_AB == "B":
                 graph_files[graph_name][2] = h
 
         return graph_files
@@ -108,23 +93,18 @@ class Worker(Process):
         print("Worker " + self.id + ": Starting matching of " + str(len(graph_files)) + " files...")
         times = {}
 
-        if self.id == "0":
+	if self.id == "0":
 
-            self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
+	        self.progress_bar = ProgressBar(len(graph_files), prefix="Worker " + str(self.id) + " ")
         i = 0
         for k, v in graph_files.items():
 
-
-
-            if self.progress_bar:
-                self.progress_bar.update_progress(i)
+            self.progress_bar.update_progress(i)
             i += 1
 
             name = v[0]
             graph_A = v[1]
             graph_B = v[2]
-
-            name_count = sum([1 for x in graph_files.values() if x[0] == name])
 
             first_decompose, second_decompose = None, None
 
@@ -135,15 +115,13 @@ class Worker(Process):
 
             try:
                 old_num_matches, old_match_time, _, _ = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = False)
-            except Exception as e:
-                raise Exception("Old matcher Exception: " + str(e))
+            except Exception:
                 old_num_matches = 0
                 old_match_time = None
 
             try:
                 new_num_matches, new_match_time, first_decompose, second_decompose = do_matching(name, graph_A, graph_B, match_count, use_new_matcher = True)
-            except Exception as e:
-                raise Exception("New matcher Exception: " + str(e))
+            except AssertionError:
                 new_num_matches = 0
                 new_match_time = None
 
@@ -175,15 +153,15 @@ class Worker(Process):
 
             times[name][6] += 1
 
-            if times[name][6] == name_count:
+            if times[name][6] == 100:
                 self.print_times(name, times)
         #return times
 
     def print_times(self, name, times):
-
+        results_dir = "./results/times/"
 
         #for name in times.keys():
-        with open(self.results_dir + name + ".times", 'w') as f:
+        with open(results_dir + name + ".times", 'w') as f:
             f.write(str(times[name][0]))
             f.write("\n")
             f.write(str(times[name][1]))
