@@ -4,10 +4,15 @@ from matplotlib.ticker import MultipleLocator
 from collections import defaultdict
 import os
 
+
+import random
+
 class Plotter:
 
     def __init__(self):
         self.decompose_times = defaultdict(list)
+        self.decompose_times_types = defaultdict(lambda: defaultdict(list))
+
         self.old_matching_times = defaultdict(list)
         self.new_matching_times = defaultdict(list)
 
@@ -70,14 +75,37 @@ class Plotter:
     def plot_decompose_times(self):
         print("Creating decompose time graph...")
         name = "decompose_times"
-        labels = sorted(self.decompose_times.keys())
+        labels = sorted(self.decompose_times_types.keys())
+
+        print(labels)
         fig = plt.figure()
         fig.set_size_inches(self.figure_size_x, self.figure_size_y)
-        data = [list(self.decompose_times[k]) for k in sorted(self.decompose_times.keys())]
-        plt.boxplot(data, labels = labels, showmeans = True, meanline = True, sym = '+')
+
+
+
+        for label in labels:
+            #print(self.decompose_times_types[label].keys())
+
+            data_x = []
+            data_y = []
+            for size in list(self.decompose_times_types[label].keys()):
+
+                for d_times in list(self.decompose_times_types[label].values())[0]:
+
+                    data_x.append(size)
+                    data_y.append(d_times)
+
+            #print(data_x)
+            #print(data_y)
+            plt.plot(data_x, data_y, marker=".", linestyle='None', color='black', label=label[:3])
+
+
+        # data = [list(self.decompose_times[k]) for k in sorted(self.decompose_times.keys())]
+        # plt.boxplot(data, labels = labels, showmeans = True, meanline = True, sym = '+')
         plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
         plt.title("Time for Decomposing During Matching")
+        #plt.legend(bbox_to_anchor=(0.98, 0.15))
         results_dir = "results/"
         plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
@@ -88,48 +116,101 @@ class Plotter:
 
         fig = plt.figure()
         fig.set_size_inches(self.figure_size_x, self.figure_size_y)
-        i = 0.5
-        for k in sorted(old_times.keys()):
-            data = [old_times[k], new_times[k]]
 
-            dividing_line = i+1.5
-            plt.axvline(dividing_line, ls = "-", color = "0.75")
 
-            bp = plt.boxplot(data, positions = [i, i+1], widths = 0.5, sym = '+')
-            self.setBoxColors(bp)
-            i+=2
-        # labels = []
-        # for key in sorted(self.new_matching_times.keys()):
-        #     labels.append("Old-" + str(key))
-        #     labels.append("New-" + str(key))
+        x_ticks = []
+
+        rand_spread = 20
+        do_old = False
+        size_max = 550
+
+        # i = 0.5
+        old_buckets = defaultdict(list)
+        new_buckets = defaultdict(list)
+
+        def get_bucket_name(k):
+            return k[:3] #+ k[-2:]
+
+        def reject(k):
+            return False#"si2m3D" not in k
+
+        if do_old:
+            for k in sorted(old_times.keys()):
+                if reject(k):
+                    continue
+
+                bucket_name = get_bucket_name(k)
+
+                for x in old_times[k]:
+                    if x > size_max and "iso" not in k:
+                        continue
+
+                    x_ticks.append(x)
+
+                    for y in old_times[k][x]:
+                        rand = random.randrange(-rand_spread, rand_spread)
+                        old_buckets[bucket_name].append((x + rand, y))
+
+            for k in old_buckets:
+                print(k)
+                c, v = zip(*old_buckets[k])
+
+                plt.plot(c, v, marker=".", linestyle='None', label=k)
+
+        else:
+            for k in sorted(new_times.keys()):
+                if reject(k):
+                    continue
+
+                bucket_name = get_bucket_name(k)
+                for x in new_times[k]:
+                    if x > size_max and "iso" not in k:
+                        continue
+
+                    x_ticks.append(x)
+                    for y in new_times[k][x]:
+                        rand = random.randrange(-rand_spread, rand_spread)
+                        new_buckets[bucket_name].append((x + rand, y))
+
+            for k in new_buckets:
+                print(k)
+                c, v = zip(*new_buckets[k])
+
+                plt.plot(c, v, marker=".", linestyle='None', label=k)
+
+        # print(old_buckets)
+
+
+
+
+
+        #     data = [old_times[k], new_times[k]]
         #
+        #     dividing_line = i+1.5
+        #     plt.axvline(dividing_line, ls = "-", color = "0.75")
         #
-        #
-        # data = []
-        # for k in sorted(self.old_matching_times.keys()):
-        #     data.append(self.old_matching_times[k])
-        #     data.append(self.new_matching_times[k])
-        #
-        # plt.boxplot(data, labels = labels, showmeans = True, meanline = True)
+        #     bp = plt.boxplot(data, positions = [i, i+1], widths = 0.5, sym = '+')
+        #     self.setBoxColors(bp)
+
         ax = plt.axes()
+        #
+        # keys = [""] + sorted(new_times.keys())
+        #ax.set_xticklabels(set(x_ticks))
+        #
+        # m = 0
+        # xticks = [0] + [t+m for t in range(1, len(keys) * 2 -1, 2)]
+        ax.set_xticks(range(0, 1400, 64))
+        #
+        # # draw temporary red and blue lines and use them to create a legend
+        # hB, = plt.plot([1, 1], color=self.old_matcher_colour)
+        # hR, = plt.plot([1, 1], color=self.new_matcher_colour)
+        # hMAX = plt.hlines(y=self.max_time, xmin = 0, xmax=len(keys) * 2, color = self.max_time_line, linestyles = 'dashed')
+        # plt.legend((hB, hR, hMAX), ('Old Matcher', 'New Matcher', 'Cutoff Time'), bbox_to_anchor=(0.98, 0.15))
+        # hB.set_visible(False)
+        # hR.set_visible(False)
 
-        keys = [""] + sorted(new_times.keys())
-        ax.set_xticklabels(keys)
 
-        m = 0
-        xticks = [0] + [t+m for t in range(1, len(keys) * 2 -1, 2)]
-        ax.set_xticks(xticks)
-
-        # draw temporary red and blue lines and use them to create a legend
-        hB, = plt.plot([1, 1], color=self.old_matcher_colour)
-        hR, = plt.plot([1, 1], color=self.new_matcher_colour)
-        hMAX = plt.hlines(y=self.max_time, xmin = 0, xmax=len(keys) * 2, color = self.max_time_line, linestyles = 'dashed')
-        plt.legend((hB, hR, hMAX), ('Old Matcher', 'New Matcher', 'Cutoff Time'), bbox_to_anchor=(0.98, 0.15))
-        hB.set_visible(False)
-        hR.set_visible(False)
-
-
-
+        plt.legend()
         plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
         plt.yscale('log')
@@ -142,13 +223,13 @@ class Plotter:
         plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
         plt.close()
 
-        print("Old failures")
-        for k, v in sorted(self.old_failures.items()):
-            print("Size: {0} - Failures: {1}".format(k, v))
-
-        print("New failures")
-        for k, v in sorted(self.new_failures.items()):
-            print("Size: {0} - Failures: {1}".format(k, v))
+        # print("Old failures")
+        # for k, v in sorted(self.old_failures.items()):
+        #     print("Size: {0} - Failures: {1}".format(k, v))
+        #
+        # print("New failures")
+        # for k, v in sorted(self.new_failures.items()):
+        #     print("Size: {0} - Failures: {1}".format(k, v))
 
     def parse_line(self, line):
         line = line.replace("[", "").replace("]", "")
@@ -189,6 +270,8 @@ class Plotter:
                 s = times_file.split("_")
                 graph_type = s[0]+s[1]
 
+                self.decompose_times_types[graph_type][size] += decompose_time
+
                 self.old_matching_times_types[graph_type][size] += old_times
                 self.new_matching_times_types[graph_type][size] += new_times
 
@@ -225,8 +308,8 @@ if __name__ == "__main__":
     plotter = Plotter()
     plotter.load_times_dir(times_dir)
     #plotter.plot_decompose_times()
-    plotter.plot_matching_times(plotter.old_matching_times, plotter.new_matching_times, "")
+    plotter.plot_matching_times(plotter.old_matching_times_types, plotter.new_matching_times_types, "")
 
-    for key in plotter.old_matching_times_types:
+    #for key in plotter.old_matching_times_types:
         #print(key)
-        plotter.plot_matching_times(plotter.old_matching_times_types[key], plotter.new_matching_times_types[key], "_" + key)
+     #   plotter.plot_matching_times(plotter.old_matching_times_types[key], plotter.new_matching_times_types[key], "_" + key)
