@@ -9,6 +9,7 @@ from source.matching import do_matching
 
 from util.progress import ProgressBar
 
+import os
 
 class Worker(Process):
 
@@ -25,6 +26,8 @@ class Worker(Process):
         self.max_size = max_size
 
         self.progress_bar = None
+
+        self.results_dir = "./results/times/"
 
     def run(self):
 
@@ -55,8 +58,10 @@ class Worker(Process):
     def load_dir(self, graph_dir):
 
         graph_files = {}
+        #print(graph_dir)
 
         for graph_file in sorted(os.listdir(graph_dir)):
+            #print(graph_file)
 
             #print("\t\t\t" + graph_file)
 
@@ -65,6 +70,11 @@ class Worker(Process):
 
             name_split = graph_file.split(".")
             graph_name = name_split[0] + "_" + name_split[1][-2:]
+
+            times_file = os.path.join(self.results_dir, graph_name[:-3] + ".times")
+            if os.path.isfile(times_file):
+                continue
+
             graph_AB = name_split[1][0]
 
             graph_size = int(graph_file.split("_")[2].split(".")[0][1:])
@@ -161,10 +171,10 @@ class Worker(Process):
         #return times
 
     def print_times(self, name, times):
-        results_dir = "./results/times/"
+
 
         #for name in times.keys():
-        with open(results_dir + name + ".times", 'w') as f:
+        with open(self.results_dir + name + ".times", 'w') as f:
             f.write(str(times[name][0]))
             f.write("\n")
             f.write(str(times[name][1]))
