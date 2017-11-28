@@ -3,7 +3,7 @@ from matplotlib.ticker import MultipleLocator
 
 from collections import defaultdict
 import os
-
+import numpy
 
 import random
 
@@ -120,13 +120,23 @@ class Plotter:
 
         x_ticks = []
 
-        rand_spread = 20
-        do_old = False
+        rand_spread = 10
+        do_old = True
+        do_new = not do_old
         size_max = 550
 
         # i = 0.5
         old_buckets = defaultdict(list)
         new_buckets = defaultdict(list)
+
+        new_colors = [(50, 103, 157), (0, 128, 128),(63, 255, 0), 	(129, 216, 208),]
+        old_colors = [ (227, 38, 54),(255, 117, 24),(114, 47, 55),(255, 196, 12),]
+
+        for i, c in enumerate(new_colors):
+            new_colors[i] = (c[0]/255.0, c[1]/255.0, c[2]/255.0,)
+
+        for i, c in enumerate(old_colors):
+            old_colors[i] = (c[0]/255.0, c[1]/255.0, c[2]/255.0,)
 
         def get_bucket_name(k):
             return k[:3] #+ k[-2:]
@@ -148,16 +158,17 @@ class Plotter:
                     x_ticks.append(x)
 
                     for y in old_times[k][x]:
-                        rand = random.randrange(-rand_spread, rand_spread)
+                        #rand = random.randrange(-rand_spread, rand_spread)
+                        rand = numpy.random.normal(0, rand_spread)
                         old_buckets[bucket_name].append((x + rand, y))
 
-            for k in old_buckets:
+            for i, k in enumerate(old_buckets):
                 print(k)
                 c, v = zip(*old_buckets[k])
 
-                plt.plot(c, v, marker=".", linestyle='None', label=k)
+                plt.plot(c, v, marker=".", color=old_colors[i], linestyle='None', label=k, markersize=4)
 
-        else:
+        if do_new:
             for k in sorted(new_times.keys()):
                 if reject(k):
                     continue
@@ -169,14 +180,15 @@ class Plotter:
 
                     x_ticks.append(x)
                     for y in new_times[k][x]:
-                        rand = random.randrange(-rand_spread, rand_spread)
+                        #rand = random.randrange(-rand_spread, rand_spread)
+                        rand = numpy.random.normal(0, rand_spread)
                         new_buckets[bucket_name].append((x + rand, y))
 
-            for k in new_buckets:
+            for i, k in enumerate(new_buckets):
                 print(k)
                 c, v = zip(*new_buckets[k])
 
-                plt.plot(c, v, marker=".", linestyle='None', label=k)
+                plt.plot(c, v, marker=".", color=new_colors[i], linestyle='None', label=k, markersize=4)
 
         # print(old_buckets)
 
@@ -192,7 +204,11 @@ class Plotter:
         #     bp = plt.boxplot(data, positions = [i, i+1], widths = 0.5, sym = '+')
         #     self.setBoxColors(bp)
 
+        import matplotlib.ticker
         ax = plt.axes()
+
+
+
         #
         # keys = [""] + sorted(new_times.keys())
         #ax.set_xticklabels(set(x_ticks))
@@ -200,6 +216,7 @@ class Plotter:
         # m = 0
         # xticks = [0] + [t+m for t in range(1, len(keys) * 2 -1, 2)]
         ax.set_xticks(range(0, 1400, 64))
+        #ax.set_ylim(ymin = 0, ymax=10000)
         #
         # # draw temporary red and blue lines and use them to create a legend
         # hB, = plt.plot([1, 1], color=self.old_matcher_colour)
@@ -214,10 +231,22 @@ class Plotter:
         plt.xlabel('Graph size')
         plt.ylabel('Time (s)')
         plt.yscale('log')
+        ax.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+        ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
+        ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, pos: str(x)))
+
         # ml = MultipleLocator(2.5)
         # plt.axes().xaxis.set_minor_locator(ml)
         # plt.gca().xaxis.grid(True, which='minor')
-        plt.title("Time for Matching")
+
+        matcher = ""
+        if do_old:
+            matcher = "Isomorphic"
+        if do_new:
+            matcher = "Split Morphism"
+        title = "Time for Matching Using the {} Matcher".format(matcher)
+        plt.title(title)
+
 
         results_dir = "results/"
         plt.savefig(results_dir + "/abc_" + name + '.png', bbox_inches = 'tight', dpi = self.figure_dpi)
